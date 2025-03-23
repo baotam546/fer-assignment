@@ -6,14 +6,16 @@ import { ColumnDef } from '@tanstack/react-table'
 import { ProductTable } from './components/ProductTable'
 import Cart from './components/Cart'
 import { useNavigate } from 'react-router-dom'
+import { BookCard } from './components/BookCard'
 
 type Props = {}
 export type Products ={
     id: string;
-    title: string;
-    category: string;
-    price: number;
-    reviews: any;
+    bookName: string;
+    bookImage:string;
+    bookReadingStatus:number;
+    bookType: string;
+    isUnread: boolean;
 }
 
  
@@ -32,87 +34,35 @@ export type ProductsCart ={
 
 const Home = (props: Props) => {
     const [selectedFilter, setSelectedFilter] = useState('all');
-    const [products, setProducts] = useState<Products[]>([]);
+    const [books, setBooks] = useState<Products[]>([]);
     const [cart, setCart] = useState<ProductsCart[]>([]);
     const navigate = useNavigate();
     useEffect(() => {
         const fetchData = async () => {
-            const response = await axios.get('http://localhost:9999/products');
+            const response = await axios.get('https://67dff1467635238f9aabe2cf.mockapi.io/books');
             if(response.status === 200){
-                setProducts(response.data);
+                setBooks(response.data);
             }
         }
         fetchData();
     }, []);
 
-    function addToCart(product: Products) {
-        setCart(prevCart => {
-            const existingProduct = prevCart.find(item => item.id === product.id);
-            if (existingProduct) {
-                // Update quantity if the product already exists in the cart
-                return prevCart.map(item =>
-                    item.id === product.id
-                        ? { ...item, quantity: item.quantity + 1 }
-                        : item
-                );
-            } else {
-                // Add new product to cart
-                return [...prevCart, { ...product, name: product.title, quantity: 1 }];
-            }
-        });
-    }
-    const columns: ColumnDef<Products>[] = [
-        {
-          accessorKey: "title",
-          header: "Title",
-        },
-        {
-          accessorKey: "category",
-          header: "Category",
-        },
-        {
-          accessorKey: "price",
-          header: "price",
-        },
-        {
-            header:"Action",
-            cell: ({ row }) => {
-                const product = row.original;
-                return (
-                    <div>
-                        <Button onClick={() => addToCart(product)}  className='bg-blue-500 hover:bg-blue-600'>Add to cart</Button>
-                    </div>
-                )
-            }
-        }
-      ]
-    const filteredProducts = selectedFilter === 'all'
-        ? products
-        : products.filter(product => product.category === selectedFilter);
+    
+const bookTorender = books.filter((book: Products) => book.bookReadingStatus === 2)
 
   return (
 
-    <div className='w-full'>
-        <div className='flex justify-center '>
-            <h2 className='text-3xl font-semibold'>Shopping System</h2>
+    <div>
+        <div className='my-4 mb-10'>
+            BOOKS SYSTEMS
         </div>
-
-        <div className='mt-10  w-full' >
-            <div className='flex justify-between '>
-                <SelectFilter selected={selectedFilter} setSelected={setSelectedFilter}/>
-                <Button onClick={()=>(navigate('/orders'))} className='bg-green-600 hover:bg-green-700'>Order history</Button>
-            </div>
-            <div className='mt-5 grid grid-cols-6 gap-5'>
-                <div className='col-span-3'>
-                    <ProductTable columns={columns} data={filteredProducts}/>
-                </div>
-                <div className='col-span-3'>
-                    <Cart cart={cart} setCart={setCart}/>
-                </div>
-                
-            </div>
-        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      {bookTorender.map((book) => (
+        <BookCard key={book.id} book={book} />
+      ))}
     </div>
+    </div>
+    
   )
 }
 
